@@ -11,33 +11,55 @@ type to fit the data.
 4. Store the results in an array
 5. Represent the result in graphical representation as given below.
 ### PROGRAM:
+```
 import matplotlib.pyplot as plt
-
 import numpy as np
+import pandas as pd
 
-data = [3, 16, 156, 47, 246, 176, 233, 140, 130,
-101, 166, 201, 200, 116, 118, 247,
-209, 52, 153, 232, 128, 27, 192, 168, 208,
-187, 228, 86, 30, 151, 18, 254,
-76, 112, 67, 244, 179, 150, 89, 49, 83, 147, 90,
-33, 6, 158, 80, 35, 186, 127]
+# Load the Melbourne dataset
+data = pd.read_csv("/kaggle/input/time-series-melbourn/daily-minimum-temperatures-in-me.csv", on_bad_lines='skip')
+data.columns = ["Date", "Temp"]
+data["Date"] = pd.to_datetime(data["Date"])
+data["Temp"] = pd.to_numeric(data["Temp"], errors='coerce')
+data = data.dropna()
 
-lags = range(35)
+# Use only temperature values
+time_series_data = data["Temp"].values
 
+# Length
+N = len(time_series_data)
 
-#Pre-allocate autocorrelation table
+# Lags (0–34)
+lags = range(min(35, N // 2))
 
-#Mean
+# Empty list
+autocorr_values = []
 
-#Variance
+# Mean & Variance
+mean_data = np.mean(time_series_data)
+variance_data = np.var(time_series_data)
 
-#Normalized data
+# Calculate ACF manually
+for lag in lags:
+    if lag == 0:
+        autocorr_values.append(1)  # ACF at lag 0 is 1
+    else:
+        auto_cov = np.sum((time_series_data[:-lag] - mean_data) *
+                          (time_series_data[lag:] - mean_data)) / N
+        autocorr_values.append(auto_cov / variance_data)
 
-#Go through lag components one-by-one
-
-#display the graph
-
+# Plot ACF
+plt.figure(figsize=(10, 6))
+plt.stem(lags, autocorr_values)   # FIXED (removed use_line_collection)
+plt.title('Autocorrelation Function (ACF) - Melbourne Temperature')
+plt.xlabel('Lag')
+plt.ylabel('Autocorrelation')
+plt.grid(True)
+plt.show()
+```
 ### OUTPUT:
+<img width="915" height="525" alt="image" src="https://github.com/user-attachments/assets/27c764a4-6896-4c19-932e-7eb856cf321a" />
+
 
 ### RESULT:
         Thus we have successfully implemented the auto correlation function in python.
